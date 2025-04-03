@@ -42,4 +42,15 @@ public class MovieController {
         movieService.deleteMovie(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Movie> updateMovie(
+            @PathVariable Long id,
+            @RequestBody UpdateMovieDTO body
+    ) {
+        Movie updatedMovie = movieService.updateMovie(id, body);
+
+        return ResponseEntity.ok(updatedMovie);
+    }
 }

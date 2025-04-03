@@ -24,6 +24,11 @@ public class MovieService {
         return movieRepository.findAll();
     }
 
+    public Movie getById(Long id) {
+        return movieRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Movie not found."));
+    }
+
     public Movie create(CreateMovieDTO body) {
         Movie newMovie = new Movie();
 
@@ -49,5 +54,23 @@ public class MovieService {
                 .orElseThrow(() -> new NotFoundException("Movie not found."));
 
         movieRepository.delete(movie);
+    }
+
+    public Movie updateMovie(Long id, UpdateMovieDTO body) {
+        Movie movie = getById(id);
+
+        if (body.getTitle() != null) movie.setTitle(body.getTitle());
+        if (body.getDescription() != null) movie.setDescription(body.getDescription());
+        if (body.getPosterImageUrl() != null) movie.setPosterImageUrl(body.getPosterImageUrl());
+
+        if (body.getGenreId() != null) {
+            Genre genre = genreService.getById(body.getGenreId());
+            movie.setGenre(genre);
+        } else if (body.getGenreName() != null) {
+            Genre genre = genreService.getByName(body.getGenreName());
+            movie.setGenre(genre);
+        }
+
+        return movieRepository.save(movie);
     }
 }
