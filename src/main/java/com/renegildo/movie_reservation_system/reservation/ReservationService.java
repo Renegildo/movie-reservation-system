@@ -67,4 +67,9 @@ public class ReservationService {
         showtimeService.getById(showtimeId);
         return reservationValidator.getAllAvailableSeatsByShowtimeId(showtimeId);
     }
+
+    public void cancelReservation(Long reservationId, UserDetails userDetails) {
+        Reservation reservation = getReservationByIdAndUserDetails(reservationId, userDetails);
+        reservationRepository.delete(reservation);
+    }
 }
