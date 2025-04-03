@@ -11,9 +11,9 @@ public class Reservation {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String seat;
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne()
     @JoinColumn(name = "showtime_id", referencedColumnName = "id")
     private Showtime showtime;
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne()
     private User user;
 }
