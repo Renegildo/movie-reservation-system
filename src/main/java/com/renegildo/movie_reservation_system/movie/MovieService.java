@@ -1,5 +1,6 @@
 package com.renegildo.movie_reservation_system.movie;
 
+import com.renegildo.movie_reservation_system.exception.NotFoundException;
 import com.renegildo.movie_reservation_system.genre.Genre;
 import com.renegildo.movie_reservation_system.genre.GenreService;
 import org.springframework.stereotype.Service;
@@ -41,5 +42,12 @@ public class MovieService {
         movieRepository.save(newMovie);
 
         return newMovie;
+    }
+
+    public void deleteMovie(Long id) {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Movie not found."));
+
+        movieRepository.delete(movie);
     }
 }
