@@ -16,11 +16,17 @@ import java.util.Optional;
 
 @Component
 public class DataLoader implements CommandLineRunner {
+    private static final List<String> DEFAULT_GENRES = List.of("horror", "comedy", "action", "fiction");
+    private static final List<String> DEFAULT_ROLES = List.of(RoleConstants.USER, RoleConstants.ADMIN);
+
+    private static final String ADMIN_EMAIL = "admin@email.com";
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PASSWORD = "abc123";
+
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
     private final PasswordEncoder passwordEncoder;
-    private final List<String> initialRoles = List.of(RoleConstants.USER, RoleConstants.ADMIN);
 
     public DataLoader(
             RoleRepository roleRepository,
@@ -41,43 +47,40 @@ public class DataLoader implements CommandLineRunner {
         createDefaultGenres();
     }
 
-    private void createDefaultRoles() {
-        initialRoles.forEach(roleName -> {
-            Optional<Role> existingRole = roleRepository.findByName(roleName);
-            if (existingRole.isPresent()) return;
+    private void createRoleIfNotExists(String roleName) {
+        Optional<Role> existingRole = roleRepository.findByName(roleName);
+        if (existingRole.isPresent()) return;
 
-            Role newRole = new Role();
-            newRole.setName(roleName);
-            roleRepository.save(newRole);
-        });
+        Role newRole = new Role();
+        newRole.setName(roleName);
+        roleRepository.save(newRole);
     }
 
+    private void createDefaultRoles() { DataLoader.DEFAULT_ROLES.forEach(this::createRoleIfNotExists); }
+
     private void createDefaultAdminUser() {
-        String adminEmail = "admin@email.com";
-        String adminUsername = "admin";
-        String adminPassword = "abc123";
-        String adminRoleName = RoleConstants.ADMIN;
+        if (userRepository.findByEmail(DataLoader.ADMIN_EMAIL).isPresent()) return;
 
-        if (userRepository.findByEmail(adminEmail).isPresent()) return;
+        Role adminRole = roleRepository.findByName(RoleConstants.ADMIN)
+                .orElseThrow(() -> new IllegalStateException("Admin role not found."));
 
-        Role adminRole = roleRepository.findByName(adminRoleName).orElseThrow();
         User adminUser = new User();
-        String encodedPassword = passwordEncoder.encode(adminPassword);
-        adminUser.setEmail(adminEmail);
-        adminUser.setUsername(adminUsername);
+        String encodedPassword = passwordEncoder.encode(DataLoader.ADMIN_PASSWORD);
+
+        adminUser.setEmail(DataLoader.ADMIN_EMAIL);
+        adminUser.setUsername(DataLoader.ADMIN_USERNAME);
         adminUser.setPassword(encodedPassword);
         adminUser.setRole(adminRole);
         userRepository.save(adminUser);
     }
 
-    private void createDefaultGenres() {
-        List<String> defaultGenreNames = List.of("horror", "comedy", "action", "fiction");
+    private void createGenreIfNotExists(String genreName) {
+        if (genreRepository.findByName(genreName).isPresent()) return;
 
-        defaultGenreNames.forEach(genreName -> {
-            Genre newGenre = new Genre();
-            newGenre.setName(genreName);
-
-            genreRepository.save(newGenre);
-        });
+        Genre newGenre = new Genre();
+        newGenre.setName(genreName);
+        genreRepository.save(newGenre);
     }
+
+    private void createDefaultGenres() { DataLoader.DEFAULT_GENRES.forEach(this::createGenreIfNotExists); }
 }
